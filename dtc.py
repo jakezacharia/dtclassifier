@@ -6,30 +6,28 @@ from sklearn.tree import DecisionTreeClassifier, plot_tree
 from sklearn.metrics import accuracy_score, classification_report
 import matplotlib.pyplot as plt
 
-# Load and split the data
+# load and split the data
 iris = load_iris()
 X, y = iris.data, iris.target
-
-# Use stratification to ensure balanced classes in both sets
 X_train, X_test, y_train, y_test = train_test_split(
     X, y,
     test_size=0.2,
     random_state=42,
-    stratify=y  # This ensures balanced classes
+    stratify=y # use stratification to ensure balanced classes in both sets
 )
 
 print(f"Training set size: {len(X_train)}")
 print(f"Test set size: {len(X_test)}")
 
-# Define parameter ranges
+# define parameter ranges
 max_depth_range = list(range(1, 11))
 min_samples_split_range = list(range(2, 21, 2))
 
-# Arrays to store results for each parameter combination
+# arrays to store results for each parameter combination
 train_scores = np.zeros((len(max_depth_range), len(min_samples_split_range)))
 test_scores = np.zeros((len(max_depth_range), len(min_samples_split_range)))
 
-# Perform grid search with both parameters together
+# perform grid search with both parameters together
 for i, max_depth in enumerate(max_depth_range):
     for j, min_samples_split in enumerate(min_samples_split_range):
         dt = DecisionTreeClassifier(
@@ -39,18 +37,19 @@ for i, max_depth in enumerate(max_depth_range):
         )
         dt.fit(X_train, y_train)
 
-        # Get predictions
+        # get predictions
         y_train_pred = dt.predict(X_train)
         y_test_pred = dt.predict(X_test)
 
-        # Store scores
+        # store scores
         train_scores[i, j] = accuracy_score(y_train, y_train_pred)
         test_scores[i, j] = accuracy_score(y_test, y_test_pred)
 
-# Create plots for hyperparameter tuning
+# plotting
+# create plots for hyperparameter tuning
 plt.figure(figsize=(12, 5))
 
-# Plot max_depth effects
+# plot max_depth effects
 plt.subplot(1, 2, 1)
 avg_train_scores_depth = np.mean(train_scores, axis=1)
 avg_test_scores_depth = np.mean(test_scores, axis=1)
@@ -63,7 +62,7 @@ plt.title('Impact of max_depth\non Model Performance')
 plt.legend()
 plt.grid(True)
 
-# Plot min_samples_split effects
+# plot min_samples_split effects
 plt.subplot(1, 2, 2)
 avg_train_scores_split = np.mean(train_scores, axis=0)
 avg_test_scores_split = np.mean(test_scores, axis=0)
@@ -80,7 +79,7 @@ plt.tight_layout()
 plt.savefig('hyperparameter_tuning.png', dpi=300, bbox_inches='tight')
 plt.close()
 
-# Find best parameters (using test scores)
+# find best parameters (using test scores)
 best_i, best_j = np.unravel_index(np.argmax(test_scores), test_scores.shape)
 best_max_depth = max_depth_range[best_i]
 best_min_samples_split = min_samples_split_range[best_j]
@@ -99,7 +98,7 @@ print(f"Best training score: {train_scores[best_i, best_j]:.3f}")
 print(f"Best test score: {test_scores[best_i, best_j]:.3f}")
 print(f"Difference: {train_scores[best_i, best_j] - test_scores[best_i, best_j]:.3f}")
 
-# Train final model with best parameters
+# train final model with best parameters
 best_model = DecisionTreeClassifier(
     max_depth=best_max_depth,
     min_samples_split=best_min_samples_split,
@@ -107,14 +106,14 @@ best_model = DecisionTreeClassifier(
 )
 best_model.fit(X_train, y_train)
 
-# Generate predictions for final model
+# generate predictions for final model
 y_pred = best_model.predict(X_test)
 
-# Print classification report
+# print classification report
 print("\nClassification Report:")
 print(classification_report(y_test, y_pred, target_names=iris.target_names))
 
-# Print feature importances
+# print feature importances
 importances = pd.DataFrame({
     'feature': iris.feature_names,
     'importance': best_model.feature_importances_
@@ -122,7 +121,7 @@ importances = pd.DataFrame({
 print("\nFeature Importances:")
 print(importances.sort_values('importance', ascending=False))
 
-# Visualize the final decision tree
+# visualize the final decision tree
 plt.figure(figsize=(20, 10))
 plot_tree(best_model,
           feature_names=iris.feature_names,
